@@ -252,7 +252,7 @@ class GrowthData():
         self.krate[i] = np.sum(np.sum(self.birth2d, axis=1)*self.grid_data.vols)
         self.sgrate[i] = np.sum(np.sum(np.abs(self.gsurface_growth), axis=1)*self.grid_data.vols)
         self.total_number[i] = np.sum(np.sum(self.next_density))
-        self.total_volume[i] = np.sum(np.sum(self.next_density, axis=1)g)
+        self.total_volume[i] = np.sum(np.sum(self.next_density, axis=1)
         self.total_charge[i] = np.sum(np.sum(self.next_density, axis=0)*self.grid_data.qpivots)
 
         self.nano_history[i] = np.copy(self.next_density)
