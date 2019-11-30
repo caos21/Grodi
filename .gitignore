@@ -1,0 +1,11 @@
+# exclude all
+/*
+!charging
+!coagulatio
+!.gitignore
+!setup.py
+!carrus.py
+!grodi.py
+!plazma.py
+!trazar.py
+!test

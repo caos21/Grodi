@@ -1,0 +1,3 @@
+[submodule "charging/external/liblsoda"]
+	path = charging/external/liblsoda
+	url = https://github.com/caos21/liblsoda.git/
