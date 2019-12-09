@@ -110,7 +110,7 @@ class RatesMap:
             rates.append(var(energy))
             labels.append(var.name)
         tzr.plot_plain(energy, rates, title="Rates",
-                       axislabel=["Time (s)", r"Rate (m$^{-3}$s$^{-1}$)"],
+                       axislabel=["Time (s)", r"Rate coefficient (m$^{3}$s$^{-1}$)"],
                        logx=False, logy=True, labels=labels,
                        ylim=[1e-18, 1e-12], savename=savename)
 
@@ -320,9 +320,5 @@ class PlasmaChem():
                  - sourcedrain[6]*nel
                  + with_tunnel*sourcedrain[5])
 
-#        rdens = np.array([dnel, dnarp, dnarm, dnsih3p, dnsih3, dnsih2, dneps])
-#        rdens[rdens<0.0] = 0.0
-#        rdens[np.isnan(rdens)] = 0.0
-#        return rdens
         return np.nan_to_num([dnel, dnarp, dnarm, dnsih3p, dnsih3, dnsih2, dneps],
                              copy=False)

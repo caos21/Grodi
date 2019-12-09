@@ -56,7 +56,12 @@ mpl.rcParams['text.latex.preamble'] = [
     r'\usepackage{textgreek}']
 mpl.rcParams['axes.formatter.useoffset'] = False
 
-CURRENT_PALETTE = sns.color_palette()
+CURRENT_PALETTE = sns.color_palette('bright')
+#swap colors
+CURRENT_PALETTE[4], CURRENT_PALETTE[6] = CURRENT_PALETTE[6], CURRENT_PALETTE[4]
+#set
+sns.set_palette(CURRENT_PALETTE)
+
 sns.set_style("whitegrid", {'axes.linewidth': '2', 'axes.edgecolor': '0.15',
                             "xtick.major.size": 8, "ytick.major.size": 8,
                             "xtick.minor.size": 4, "ytick.minor.size": 4,
@@ -209,7 +214,7 @@ class PlotPanels:
         lflist = []
         for i, data in enumerate(self.moments):
             lfl, = ax1.plot(data[:, 0], data[:, 1]*1e-16, ls=self.lts[i%(len(self.lts))], lw=3)
-            ax3.plot(data[:, 0], data[:, 3]*1e-16, ls=self.lts[i%(len(self.lts))], lw=3)
+            ax3.plot(data[:, 0], np.abs(data[:, 3])*1e-16, ls=self.lts[i%(len(self.lts))], lw=3)
             ax4.plot(self.plasma[i][:, 0], self.plasma[i][:, 1],
                      ls=self.lts[i%(len(self.lts))], lw=3)
             lflist.append(lfl)
@@ -219,20 +224,23 @@ class PlotPanels:
             else:
                 ax2.plot(data[:, 0], data[:, 2]*1e12, ls=self.lts[i%(len(self.lts))], lw=3)
 
-        for i, (axs, text) in enumerate(zip([ax1, ax2, ax3, ax4], ['a)', 'b)', 'c)', 'd)'])):
+        for i, (axs, text) in enumerate(zip([ax1, ax2, ax3, ax4], ['a', 'b', 'c', 'd'])):
             axs.text(0.5, 0.9, text, transform=axs.transAxes, fontsize=24)
             axs.grid(b=True, which='minor', axis='x', linewidth=1)
             axs.grid(b=True, which='minor', axis='y', linewidth=1)
 
         if not self.coagulation_alone:
             ax2.set_ylabel(r"Total volume ($10^{\text{-}6}$m$^3$/m$^3$)")
+            ax2.set_ylim(bottom=0.0)
         else:
             ax2.set_ylabel(r"Total volume ($10^{\text{-}12}$m$^3$/m$^3$)")
             ax2.set_ylim(2.1, 2.4)
 
         ax1.set_xlim(0.0, self.time_f)
         ax1.set_ylabel(r"Number density $(10^{16}$m$^{\text{-}3})$")
-        ax3.set_ylabel(r"Total charge ($10^{16}$ e/m$^3$)")
+        ax1.set_ylim(bottom=0.0)
+        ax3.set_ylim(bottom=0.0)
+        ax3.set_ylabel(r"Total charge ($-10^{16}$ e/m$^3$)")
         ax4.set_ylabel(r"Mean electron energy (eV)")
         ax3.set_xlabel("Time (s)")
         ax4.set_xlabel("Time (s)")
@@ -241,6 +249,71 @@ class PlotPanels:
 
         #plt.tight_layout()
         plt.subplots_adjust(wspace=0.35)
+        fig.savefig(self.savefile)#, bbox_inches="tight")
+        plt.show()
+
+    def plot2(self):
+        """ Plot panels
+        """
+        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2,
+                                                     sharex=True,
+                                                     figsize=(14, 10.5))
+
+        lflist = []
+        #nelist = []
+        ax3_2 = ax3.twinx()
+        for i, data in enumerate(self.moments):
+            lfl, = ax1.plot(data[:, 0], data[:, 1]*1e-16, ls=self.lts[i%(len(self.lts))], lw=3)
+            ax3.plot(data[:, 0], np.abs(data[:, 3])*1e-16, ls=self.lts[i%(len(self.lts))], lw=3)
+            color3_2 = CURRENT_PALETTE[7]
+            if i > 3:
+                color3_2 = 'k'
+            ax3_2.plot(self.plasma[i][:, 0], self.plasma[i][:, 2],
+                       ls=self.lts[i%(len(self.lts))], lw=3,
+                       color=color3_2, label=r'$n_e$ - '+self.labels[i])
+            ax4.plot(self.plasma[i][:, 0], self.plasma[i][:, 1],
+                     ls=self.lts[i%(len(self.lts))], lw=3)
+            lflist.append(lfl)
+            #nelist.append(ne)
+
+            if not self.coagulation_alone:
+                ax2.plot(data[:, 0], data[:, 2]*1e6, ls=self.lts[i%(len(self.lts))], lw=3)
+            else:
+                ax2.plot(data[:, 0], data[:, 2]*1e12, ls=self.lts[i%(len(self.lts))], lw=3)
+
+        for i, (axs, text) in enumerate(zip([ax1, ax2, ax3, ax4], ['a', 'b', 'c', 'd'])):
+            axs.text(0.5, 0.9, text, transform=axs.transAxes, fontsize=24)
+            axs.grid(b=True, which='minor', axis='x', linewidth=1)
+            axs.grid(b=True, which='minor', axis='y', linewidth=1)
+            axs.set_ylim(bottom=0.0)
+
+        if not self.coagulation_alone:
+            ax2.set_ylabel(r"Total volume ($10^{\text{-}6}$m$^3$/m$^3$)")
+            ax3_2.set_yscale('log')
+            ax4.set_ylim(bottom=1.0)
+            ax3.set_xlim(0.0, self.time_f)
+            ax3_2.set_xlim(0.0, self.time_f)
+            ax3_2.legend(fontsize='x-large', markerscale=1.5, loc='lower left')
+        else:
+            ax2.set_ylabel(r"Total volume ($10^{\text{-}12}$m$^3$/m$^3$)")
+            ax2.set_ylim(2.1, 2.4)
+
+
+        ax1.set_xlim(0.0, self.time_f)
+        #ax3_2.set_ylim(bottom=10.0)
+
+        #ax3.set_ylim(ax3_2.get_ylim())
+        ax1.set_ylabel(r"Number density $(10^{16}$m$^{\text{-}3})$")
+        ax3.set_ylabel(r"Total charge ($-10^{16}$ e/m$^3$)")
+        ax3_2.set_ylabel(r"Electron density (m$^{-3}$)")
+        ax4.set_ylabel(r"Mean electron energy (eV)")
+        ax3.set_xlabel("Time (s)")
+        ax4.set_xlabel("Time (s)")
+
+        fig.legend(tuple(lflist), self.labels, loc='upper center', ncol=5, labelspacing=0.)
+
+        #plt.tight_layout()
+        plt.subplots_adjust(wspace=0.46)
         fig.savefig(self.savefile)#, bbox_inches="tight")
         plt.show()
 
@@ -286,7 +359,7 @@ class DistroAnimated():
         pds = self.pdistro
 
         axsizes_.set_xlabel('Diameter (nm)')
-        axsizes_.set_ylabel('Density (1/m3)')
+        axsizes_.set_ylabel(r'Density (m$^{-3}$)')
         axsizes_.set_xscale('log')
         axsizes_.set_yscale('log')
         axsizes_.set_ylim([100, 10e16])
@@ -298,7 +371,7 @@ class DistroAnimated():
 
         #pcharges_.set_title('Charge distribution')
         axcharges_.set_ylabel('Charge (e)')
-        axcharges_.set_xlabel('Density (e/m3)')
+        axcharges_.set_xlabel(r'Density (e/m$^{3}$)')
         axcharges_.set_xscale('log')
         axcharges_.set_xlim([100, 50e16])
         axcharges_.set_ylim([pds.qpivots[0]+20, pds.qpivots[-1]])
@@ -439,7 +512,6 @@ class PlotDistros():
         """
         fig, ax1 = plt.subplots(figsize=(12, 9))
 
-
         ax1.set_xlabel('Diameter (nm)')
         ax1.set_xscale('log')
         ax1.set_xlim([self.dpivots[0], self.dpivots[-1]])
@@ -492,7 +564,7 @@ class PlotDistros():
 
 
         psizes_.set_xlabel('Diameter (nm)')
-        psizes_.set_ylabel('Density (1/m3)')
+        psizes_.set_ylabel(r'Density (m$^{-3}$)')
         psizes_.set_xscale('log')
         psizes_.set_yscale('log')
         psizes_.set_ylim([100, 10e16])
@@ -503,7 +575,7 @@ class PlotDistros():
         pdistro_.grid(b=True, which='minor', axis='y', linewidth=0.5)
 
         pcharges_.set_ylabel('Charge (e)')
-        pcharges_.set_xlabel('Density (e/m3)')
+        pcharges_.set_ylabel(r'Density (e/m$^{3}$)')
         pcharges_.set_xscale('log')
         pcharges_.set_xlim([100, 10e16])
         pcharges_.set_ylim([self.qpivots[0], -40])
@@ -549,11 +621,11 @@ class PlotDistros():
         ax1 = fig.add_subplot(1, 2, 1)
         ax2 = fig.add_subplot(1, 2, 2, sharey=ax1)
 
-        ax1.text(0.1, 0.1, 'a)', transform=ax1.transAxes, fontsize=24)
-        ax2.text(0.1, 0.1, 'b)', transform=ax2.transAxes, fontsize=24)
+        ax1.text(0.1, 0.1, 'a', transform=ax1.transAxes, fontsize=24)
+        ax2.text(0.1, 0.1, 'b', transform=ax2.transAxes, fontsize=24)
 
         ax1.set_xlabel('Diameter (nm)')
-        ax1.set_ylabel('Density (1/m3)')
+        ax1.set_ylabel(r'Density (m$^{-3}$)')
         ax1.set_xscale('log')
         ax1.set_yscale('log')
         ax1.set_ylim([10, 10e16])
