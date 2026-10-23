@@ -1,33 +1,39 @@
 cmake_minimum_required(VERSION 3.0)
 project(charging)
 
-
 # ============= LSODA
-set(LSODA_DIR "${PROJECT_SOURCE_DIR}/external/liblsoda/")
-message("lsoda dir ${LSODA_DIR}")
+set(LSODA_DIR "${PROJECT_SOURCE_DIR}/external/liblsoda")
+message(STATUS "lsoda dir: ${LSODA_DIR}")
+
 include(ExternalProject)
 ExternalProject_Add(liblsoda
-    SOURCE_DIR ${LSODA_DIR}
+    SOURCE_DIR "${LSODA_DIR}"
     CONFIGURE_COMMAND ""
-    STEP_TARGETS build
     BUILD_COMMAND make
     BUILD_IN_SOURCE 1
-    INSTALL_COMMAND "")
-include_directories("${LSODA_DIR}/src/")
-link_directories("${LSODA_DIR}/src/")
+    INSTALL_COMMAND ""
+)
+
+include_directories(SYSTEM "${LSODA_DIR}/src")
+
+# 1. Change STATIC to SHARED here
+add_library(lsoda SHARED IMPORTED GLOBAL)
+add_dependencies(lsoda liblsoda)
+
+# 2. Update the filename extension to .so
+set_target_properties(lsoda PROPERTIES
+    IMPORTED_LOCATION "${LSODA_DIR}/src/liblsoda.so"
+)
 # ============= LSODA
 
-
-link_directories("${PROJECT_SOURCE_DIR}/lib")
 
 include_directories("${PROJECT_SOURCE_DIR}/include")
 
+# This will now successfully find src/charging.c relative to this file
 add_library(charging SHARED src/charging.c include/charging.h)
 
-set(LIBS "-lm")
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp -Ofast -fPIC -Wall -ftree-vectorizer-verbose=3 -march=znver1 -ftree-vectorize -fopt-info-vec-missed=vec.miss -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security")
-set(CMAKE_CXX_LINKER_FLAGS "${CMAKE_CXX_LINKER_FLAGS} -fopenmp -Ofast -Wall -ftree-vectorizer-verbose=3 -march=znver1 -ftree-vectorize -fopt-info-vec-missed=vec.miss -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp -Ofast -fPIC -Wall -march=znver1")
+set(CMAKE_CXX_LINKER_FLAGS "${CMAKE_CXX_LINKER_FLAGS} -fopenmp -Ofast -Wall -march=znver1")
 
 find_package(OpenMP)
 if(OPENMP_FOUND)
@@ -38,9 +44,9 @@ if(OPENMP_FOUND)
   add_definitions(-DOPENMP)
 endif()
 
-target_link_libraries(charging
-                      lsoda
-                      ${LIBS})
+target_link_libraries(charging lsoda -lm)
 
 enable_testing()
+
+# Install the final compiled .so into the exact 'lib' folder setup.py expects
 install(TARGETS charging DESTINATION "${PROJECT_SOURCE_DIR}/lib")

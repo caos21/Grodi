@@ -14,7 +14,7 @@
 #   limitations under the License.
 #
 # -*- coding: utf-8 -*-
-cdef extern from "/home/ben/git/Grodi/charging/include/charging.h":
+cdef extern from "charging.h":
     struct collision_data:
         short l
         short nchrgs

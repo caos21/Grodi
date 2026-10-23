@@ -46,14 +46,14 @@ mpl.rcParams['font.family'] = 'sans-serif'
 mpl.rcParams['font.sans-serif'] = ['Helvetica']
 mpl.rcParams['mathtext.rm'] = 'Bitstream Vera Sans'
 mpl.rc('text', usetex=True)
-mpl.rcParams['text.latex.preamble'] = [
-    r'\usepackage[version=4]{mhchem}',
-    r'\usepackage{siunitx}',
-    r'\sisetup{detect-all}',
-    r'\usepackage{helvet}',
-    r'\usepackage{sansmath}',
-    r'\sansmath',
-    r'\usepackage{textgreek}']
+mpl.rcParams['text.latex.preamble'] = r"""
+    \usepackage[version=4]{mhchem}
+    \usepackage{siunitx}
+    \sisetup{detect-all}
+    \usepackage{helvet}
+    \usepackage{sansmath}
+    \sansmath
+    \usepackage{textgreek}"""
 mpl.rcParams['axes.formatter.useoffset'] = False
 
 CURRENT_PALETTE = sns.color_palette('bright')
@@ -141,8 +141,8 @@ def plot_plain(pivots, data, labels=None, logx=True, title=u"Size distribution",
     else:
         plt.plot(pivots, data, linewidth=3)
 
-    ax1 = fig.gca()
-    ax1.grid(b=True, which='minor', axis='x', color='k', linewidth=0.5)
+    ax1 = plt.gca()
+    ax1.grid(visible=True, which='minor', axis='x', color='k', linewidth=0.5)
 
     if xlim is not None:
         plt.xlim(xlim)

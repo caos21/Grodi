@@ -320,5 +320,4 @@ class PlasmaChem():
                  - sourcedrain[6]*nel
                  + with_tunnel*sourcedrain[5])
 
-        return np.nan_to_num([dnel, dnarp, dnarm, dnsih3p, dnsih3, dnsih2, dneps],
-                             copy=False)
+        return np.nan_to_num([dnel, dnarp, dnarm, dnsih3p, dnsih3, dnsih2, dneps])
